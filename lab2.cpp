@@ -1,10 +1,13 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 class Vector {
     double* p = nullptr; // Указатель на массив, задающий вектор
     int n = 0; // Размерность вектора (число элементов)
-    friend const Vector operator+(const double* left, const Vector& right); // Объявляю функцию сложения как дружественную
+    friend const Vector operator+(const double* left, const Vector& right); // Объявляю оператор сложения дружественной функцией
+    friend ostream& operator<<(ostream& os, const Vector& v); // Объявляю оператор вывода дружественной функцией
+    friend istream& operator>>(istream& is, Vector& v); // Объявляю оператор ввода дружественной функцией
 public:
     // Конструктор, создающий объект вектор на основе обычного одномерного массива размерности n
     Vector(double* p, int n) {
@@ -68,7 +71,18 @@ public:
         if (p != nullptr) delete[] p; // Освобождаем память, если она была выделена
     }
 };
-// Перегрузка оператора присваивания
+ostream& operator<<(ostream& os, const Vector& v) { // Перегруженный оператор вывода в поток
+    for (int i = 0; i < v.n; i++) // Вывод значений вектора через поток вывода
+        os << v.p[i] << " ";
+    return os;
+}
+
+istream& operator>>(istream& is, Vector& v) { // Перегруженный оператор ввода из потока
+    for (int i = 0; i < v.n; i++) // Считывание значений вектора из потока ввода
+        is >> v.p[i];
+    return is;
+}
+// Перегрузка оператора сложения
 const Vector operator+(const double* left, const Vector& right) {
     Vector result(right.n); // Создаем новый объект вектора
     for (int i = 0; i < right.n; i++) result.p[i] = right.p[i]+left[i]; // Заполняем новый вектор суммами значений из двух объектов
@@ -76,10 +90,21 @@ const Vector operator+(const double* left, const Vector& right) {
 }
 
 int main() {
-    double m1[] = {5.2, 1, 3, 4};
-    Vector V1(m1, 4);
-    double* num = new double[5]{1.8,2,3,4};
-    Vector V2 = num + V1;
-    V2.print();
+    ifstream inputFile("input.txt");
+    int size;
+    inputFile >> size;
+    double* values = new double[size];
+    for (int i = 0; i < size; ++i) {
+        inputFile >> values[i];
+    }
+    Vector V1(values, size);
+    double* scalar = new double[size];
+    for (int i = 0; i < size; ++i) {
+        inputFile >> scalar[i];
+        cout << scalar[i];
+    }
+    cout << endl << V1 << endl;
+    Vector V2 = scalar + V1;
+    cout << V2;
     return 0;
 }
